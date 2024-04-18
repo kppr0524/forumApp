@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests\PostRequest;
 use App\Models\Feed;
 use App\Models\Like;
+use App\Models\Comment;
 
 class FeedController extends Controller
 {
@@ -60,5 +61,32 @@ class FeedController extends Controller
                 'message' => 'Post liked successfully!',
             ], 200);
         }
+    }
+
+    public function comment(Request $request, $feed_id)
+    {
+        $request->validate([
+            'body' => 'required'
+        ]);
+
+        $comment = Comment::create([
+            'user_id' => auth()->id(),
+            'feed_id' => $feed_id,
+            'body' => $request->body
+        ]);
+
+        return response([
+            'message' => 'Comment created successfully!',
+        ], 201);
+    }
+
+    public function getComments($feed_id)
+    {
+        $comments = Comment::with('feed')->with('user')->whereFeedId($feed_id)->latest()->get();
+
+        return response([
+            'comments' => $comments
+        ], 200);
+        
     }
 }
